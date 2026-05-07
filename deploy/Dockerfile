@@ -60,6 +60,13 @@ COPY packages/db-common/prisma.config.ts ./packages/db-common/
 
 RUN yarn install --frozen-lockfile --network-timeout 600000
 
+# react-gauge-chart imports `lodash/isEqual` directly. lodash is a transitive
+# dep listed in yarn.lock but not declared by any package.json, so Yarn does
+# not hoist it to the root node_modules and Turbopack fails to resolve it
+# during `next build`. Add it explicitly to the workspace root (won't update
+# yarn.lock in our Git, only inside this container layer).
+RUN yarn add --ignore-workspace-root-check --network-timeout 600000 lodash@^4.17.23
+
 # =============================================================================
 # 3. builder — prebuild + Next build + copy-assets
 # =============================================================================
