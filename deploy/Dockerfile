@@ -136,8 +136,15 @@ COPY --from=builder /app/node_modules/tsx                ./node_modules/tsx
 COPY --from=builder /app/node_modules/esbuild            ./node_modules/esbuild
 COPY --from=builder /app/node_modules/get-tsconfig       ./node_modules/get-tsconfig
 COPY --from=builder /app/node_modules/resolve-pkg-maps   ./node_modules/resolve-pkg-maps
-COPY --from=builder /app/node_modules/.bin/prisma        ./node_modules/.bin/prisma
-COPY --from=builder /app/node_modules/.bin/tsx           ./node_modules/.bin/tsx
+# Recreate the .bin symlinks. We can't COPY them — Docker dereferences
+# symlinks during COPY, turning the prisma/tsx shim scripts into real files
+# at /app/node_modules/.bin/, which breaks their `__dirname`-relative wasm
+# and binary lookups (prisma_schema_build_bg.wasm not found).
+RUN mkdir -p /app/node_modules/.bin \
+    && ln -sf ../prisma/build/index.js /app/node_modules/.bin/prisma \
+    && ln -sf ../tsx/dist/cli.mjs /app/node_modules/.bin/tsx \
+    && chmod +x /app/node_modules/prisma/build/index.js \
+    && chmod +x /app/node_modules/tsx/dist/cli.mjs
 
 # Entrypoint script (migrations + optional seed + start server)
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
