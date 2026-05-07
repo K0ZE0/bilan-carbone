@@ -58,7 +58,10 @@ COPY apps/bilan-carbone/publicodes-packages ./apps/bilan-carbone/publicodes-pack
 COPY packages/db-common/prisma ./packages/db-common/prisma
 COPY packages/db-common/prisma.config.ts ./packages/db-common/
 
-RUN yarn install --frozen-lockfile --network-timeout 600000
+# --production=false forces devDependencies install even when Coolify sets
+# NODE_ENV=production at build time (yarn would otherwise skip devDeps,
+# breaking `next build` which needs typescript, eslint, etc.).
+RUN yarn install --frozen-lockfile --production=false --network-timeout 600000
 
 # react-gauge-chart imports `lodash/isEqual` directly. lodash is a transitive
 # dep listed in yarn.lock but not declared by any package.json, so Yarn does
