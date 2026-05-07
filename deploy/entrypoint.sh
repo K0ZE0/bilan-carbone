@@ -21,9 +21,15 @@ fi
 
 if [ "${RUN_SEED:-false}" = "true" ]; then
   echo "[entrypoint] Running seed..."
-  cd ./apps/bilan-carbone && tsx prisma/seed/index.ts && cd /app
-  echo "[entrypoint] Seed complete."
+  # Run seed in subshell so its `cd` doesn't leak to the rest of the script.
+  # Use `|| true` so a failed seed doesn't prevent the server from starting —
+  # the seed can be re-run manually via the Coolify terminal afterwards.
+  ( cd /app/apps/bilan-carbone && tsx prisma/seed/index.ts ) || \
+    echo "[entrypoint] Seed FAILED — continuing to start server. Re-run seed manually if needed."
+  echo "[entrypoint] Seed step done."
 fi
 
-echo "[entrypoint] Starting server: $*"
+# Always reset cwd before exec'ing the server CMD.
+cd /app
+echo "[entrypoint] Starting server (cwd=$(pwd)): $*"
 exec "$@"

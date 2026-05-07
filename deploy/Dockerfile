@@ -123,6 +123,11 @@ COPY --from=builder /app/apps/bilan-carbone/node_modules      ./apps/bilan-carbo
 COPY --from=builder /app/packages                             ./packages
 COPY --from=builder /app/apps/bilan-carbone/prisma            ./apps/bilan-carbone/prisma
 COPY --from=builder /app/apps/bilan-carbone/prisma.config.ts  ./apps/bilan-carbone/prisma.config.ts
+# tsconfig files needed so tsx can resolve `@/...` path aliases when running the seed
+COPY --from=builder /app/apps/bilan-carbone/tsconfig.json     ./apps/bilan-carbone/tsconfig.json
+COPY --from=builder /app/tsconfig.base.json                   ./tsconfig.base.json
+# Source files referenced by the seed via @/* alias (constants, types, helpers)
+COPY --from=builder /app/apps/bilan-carbone/src               ./apps/bilan-carbone/src
 
 # Entrypoint script (migrations + optional seed + start server)
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
