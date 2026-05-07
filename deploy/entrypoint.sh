@@ -9,6 +9,10 @@
 
 set -e
 
+# Use local node_modules/.bin (not globals) — required because the prisma
+# config files import packages from the workspace's node_modules tree.
+export PATH="/app/node_modules/.bin:$PATH"
+
 if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
   echo "[entrypoint] Running prisma migrate deploy..."
   prisma migrate deploy --config ./packages/db-common/prisma.config.ts

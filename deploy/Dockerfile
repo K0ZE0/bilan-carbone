@@ -104,14 +104,6 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
-# We need:
-#   - Next standalone server
-#   - Prisma CLI (for `migrate deploy` at startup)
-#   - tsx (for `prisma db seed` which runs `tsx prisma/seed/index.ts`)
-#   - Prisma schema + generated client + seed source
-RUN yarn global add prisma@7.7.0 tsx@4.21.0 \
-    && yarn cache clean
-
 # Standalone output (server.js + traced node_modules)
 COPY --from=builder /app/apps/bilan-carbone/.next/standalone ./
 
@@ -127,6 +119,25 @@ COPY --from=builder /app/packages/db-common/package.json     ./packages/db-commo
 # Seed needs the bilan-carbone prisma folder + its prisma.config.ts + package.json
 COPY --from=builder /app/apps/bilan-carbone/prisma            ./apps/bilan-carbone/prisma
 COPY --from=builder /app/apps/bilan-carbone/prisma.config.ts  ./apps/bilan-carbone/prisma.config.ts
+
+# Tools needed at runtime by entrypoint.sh:
+#   - prisma CLI: `prisma migrate deploy`
+#   - dotenv: imported by prisma.config.ts (`import 'dotenv/config'`)
+#   - tsx: runs the seed (`tsx prisma/seed/index.ts`)
+# We install them in /app/node_modules (not globally) because prisma.config.ts
+# does `import { defineConfig, env } from 'prisma/config'` and Node module
+# resolution from /app/packages/db-common/prisma.config.ts walks up the tree
+# to /app/node_modules. Globals (~/.yarn/global) are not on that path.
+COPY --from=builder /app/node_modules/dotenv             ./node_modules/dotenv
+COPY --from=builder /app/node_modules/prisma             ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma            ./node_modules/@prisma
+COPY --from=builder /app/node_modules/tsx                ./node_modules/tsx
+# tsx peer deps (esbuild + helpers it shells out to)
+COPY --from=builder /app/node_modules/esbuild            ./node_modules/esbuild
+COPY --from=builder /app/node_modules/get-tsconfig       ./node_modules/get-tsconfig
+COPY --from=builder /app/node_modules/resolve-pkg-maps   ./node_modules/resolve-pkg-maps
+COPY --from=builder /app/node_modules/.bin/prisma        ./node_modules/.bin/prisma
+COPY --from=builder /app/node_modules/.bin/tsx           ./node_modules/.bin/tsx
 
 # Entrypoint script (migrations + optional seed + start server)
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
