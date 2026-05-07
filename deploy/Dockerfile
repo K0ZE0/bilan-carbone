@@ -18,7 +18,14 @@
 FROM node:22.16.0-bookworm-slim AS base
 ENV CI=true \
     YARN_CACHE_FOLDER=/root/.yarn \
-    NEXT_TELEMETRY_DISABLED=1
+    NEXT_TELEMETRY_DISABLED=1 \
+    NODE_OPTIONS=--max-old-space-size=4096
+# Placeholder DSN required by prisma.config.ts at INSTALL time. The bilan-carbone
+# postinstall hook invokes `prisma generate` which loads the config and reads
+# POSTGRES_PRISMA_URL via prisma's `env()` helper — that helper throws if unset.
+# Prisma generate doesn't actually connect to the DB; the value just has to be
+# a syntactically valid DSN. The real value is injected by Coolify at runtime.
+ENV POSTGRES_PRISMA_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?options=-c%20search_path%3Dpublic%2Cbilan_carbone%2Ccommon"
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
