@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/build
+**/coverage
+
+# Env files (we copy .env.dist explicitly during build)
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.test
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Test artefacts
+**/cypress/videos
+**/cypress/screenshots
+**/cypress/downloads
+
+# Docker / deploy artefacts (avoid recursion)
+deploy/.env*
+deploy/data
+deploy/postgres-data
+
+# Misc
+**/*.log
+**/.cache
+**/.eslintcache

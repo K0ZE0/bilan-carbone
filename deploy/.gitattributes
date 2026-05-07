@@ -1,0 +1,5 @@
+# Force LF line endings inside deploy/ so shell scripts and Dockerfiles work
+# correctly on Linux containers regardless of where the repo was cloned.
+* text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
