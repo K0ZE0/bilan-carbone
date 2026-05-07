@@ -104,47 +104,25 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
-# Standalone output (server.js + traced node_modules)
-COPY --from=builder /app/apps/bilan-carbone/.next/standalone ./
-
-# .next/static and public are copied into the standalone tree by copy-assets.js
-# during build. We don't re-copy them here — they're already in place under
-# ./apps/bilan-carbone/.next/static and ./apps/bilan-carbone/public
-
-# Files needed for migrations + seed at runtime
-COPY --from=builder /app/packages/db-common/prisma           ./packages/db-common/prisma
-COPY --from=builder /app/packages/db-common/prisma.config.ts ./packages/db-common/prisma.config.ts
-COPY --from=builder /app/packages/db-common/package.json     ./packages/db-common/package.json
-
-# Seed needs the bilan-carbone prisma folder + its prisma.config.ts + package.json
+# Strategy: ship the full builder workspace tree, not a slim cherry-pick.
+# Image is ~1 GB but eliminates whack-a-mole MODULE_NOT_FOUND errors at
+# runtime (each transitive dep, symlink, .wasm file, etc. just works).
+#
+# Order matters:
+#   1. Standalone Next.js bundle first — gives server.js, .next/, public/,
+#      and a slim package.json tuned for `node server.js`.
+#   2. Then OVERWRITE node_modules with the full version. The full set is
+#      a superset of what Next traced, so the server still finds everything,
+#      and prisma + tsx + their entire transitive dep tree (effect, etc.)
+#      are now available for migrations and seed.
+#   3. Workspace packages (@repo/db-common etc.) at the right path.
+#   4. Prisma schema + seed sources for the entrypoint.
+COPY --from=builder /app/apps/bilan-carbone/.next/standalone  ./
+COPY --from=builder /app/node_modules                         ./node_modules
+COPY --from=builder /app/apps/bilan-carbone/node_modules      ./apps/bilan-carbone/node_modules
+COPY --from=builder /app/packages                             ./packages
 COPY --from=builder /app/apps/bilan-carbone/prisma            ./apps/bilan-carbone/prisma
 COPY --from=builder /app/apps/bilan-carbone/prisma.config.ts  ./apps/bilan-carbone/prisma.config.ts
-
-# Tools needed at runtime by entrypoint.sh:
-#   - prisma CLI: `prisma migrate deploy`
-#   - dotenv: imported by prisma.config.ts (`import 'dotenv/config'`)
-#   - tsx: runs the seed (`tsx prisma/seed/index.ts`)
-# We install them in /app/node_modules (not globally) because prisma.config.ts
-# does `import { defineConfig, env } from 'prisma/config'` and Node module
-# resolution from /app/packages/db-common/prisma.config.ts walks up the tree
-# to /app/node_modules. Globals (~/.yarn/global) are not on that path.
-COPY --from=builder /app/node_modules/dotenv             ./node_modules/dotenv
-COPY --from=builder /app/node_modules/prisma             ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma            ./node_modules/@prisma
-COPY --from=builder /app/node_modules/tsx                ./node_modules/tsx
-# tsx peer deps (esbuild + helpers it shells out to)
-COPY --from=builder /app/node_modules/esbuild            ./node_modules/esbuild
-COPY --from=builder /app/node_modules/get-tsconfig       ./node_modules/get-tsconfig
-COPY --from=builder /app/node_modules/resolve-pkg-maps   ./node_modules/resolve-pkg-maps
-# Recreate the .bin symlinks. We can't COPY them — Docker dereferences
-# symlinks during COPY, turning the prisma/tsx shim scripts into real files
-# at /app/node_modules/.bin/, which breaks their `__dirname`-relative wasm
-# and binary lookups (prisma_schema_build_bg.wasm not found).
-RUN mkdir -p /app/node_modules/.bin \
-    && ln -sf ../prisma/build/index.js /app/node_modules/.bin/prisma \
-    && ln -sf ../tsx/dist/cli.mjs /app/node_modules/.bin/tsx \
-    && chmod +x /app/node_modules/prisma/build/index.js \
-    && chmod +x /app/node_modules/tsx/dist/cli.mjs
 
 # Entrypoint script (migrations + optional seed + start server)
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
