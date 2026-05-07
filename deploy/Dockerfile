@@ -58,17 +58,18 @@ COPY apps/bilan-carbone/publicodes-packages ./apps/bilan-carbone/publicodes-pack
 COPY packages/db-common/prisma ./packages/db-common/prisma
 COPY packages/db-common/prisma.config.ts ./packages/db-common/
 
-# --production=false forces devDependencies install even when Coolify sets
-# NODE_ENV=production at build time (yarn would otherwise skip devDeps,
-# breaking `next build` which needs typescript, eslint, etc.).
-RUN yarn install --frozen-lockfile --production=false --network-timeout 600000
+# NODE_ENV=development forced inline because Coolify passes
+# NODE_ENV=production as a build-arg, which causes yarn 1.x to skip
+# devDependencies regardless of --production=false. We need devDeps
+# (typescript, eslint, @types/*) for `next build` to work.
+RUN NODE_ENV=development yarn install --frozen-lockfile --production=false --network-timeout 600000
 
 # react-gauge-chart imports `lodash/isEqual` directly. lodash is a transitive
 # dep listed in yarn.lock but not declared by any package.json, so Yarn does
 # not hoist it to the root node_modules and Turbopack fails to resolve it
 # during `next build`. Add it explicitly to the workspace root (won't update
 # yarn.lock in our Git, only inside this container layer).
-RUN yarn add --ignore-workspace-root-check --network-timeout 600000 lodash@^4.17.23
+RUN NODE_ENV=development yarn add --ignore-workspace-root-check --network-timeout 600000 lodash@^4.17.23
 
 # =============================================================================
 # 3. builder — prebuild + Next build + copy-assets
