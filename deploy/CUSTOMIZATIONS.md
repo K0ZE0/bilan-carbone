@@ -14,8 +14,12 @@ notre propre instance Kozeo. À mettre à jour au fur et à mesure.
 ### État actuel
 - ~50 comptes test créés par le seed (`apps/bilan-carbone/prisma/seed/index.ts`)
 - Tous emails en `@yopmail.com`
-- Mot de passe pour TOUS : `password`
-- Reset password ne marche pas (SMTP non configuré → cf. §3)
+- **Passwords par convention** :
+  - `cut-admin-test@yopmail.com` → `password` (seule exception)
+  - `bc-<role>-<N>@yopmail.com` → `password-<N>` (ex: `bc-admin-0` → `password-0`)
+  - `bc-cr-<role>-<N>@yopmail.com` → `password-<N>`
+  - `<env>-env-<role>-<N>@yopmail.com` → vérifier le seed file (peut varier)
+- Reset password ne marche pas (SMTP non configuré → cf. §4)
 
 ### À faire
 - [ ] Décider du modèle final : 1 admin propre OU plusieurs comptes test renommés
