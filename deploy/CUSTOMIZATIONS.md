@@ -305,13 +305,28 @@ MUI overrides dans `apps/bilan-carbone/src/environments/*/theme/theme.ts` (TILT 
 
 ---
 
-## 12. Sauvegardes & DR
+## 12. Sauvegardes & DR (spécificités Hetzner)
+
+### Pourquoi Hetzner change la donne
+- **Snapshots Hetzner** (console → ton serveur → Snapshots) : copie disque complète,
+  payante (~0.012 €/Go/mois). Bon AVANT une opération risquée. PAS un backup BDD
+  (snapshot d'un VPS qui tourne = BDD en état potentiellement inconsistent).
+- **Backups Hetzner** (option séparée du panneau, ~20% du coût VPS/mois) : tourne
+  tous les jours, 7 versions glissantes. Filet de sécurité passif.
+- **Cloud-init** : Hetzner supporte un script d'init au create. Idéal pour la
+  migration vers un VPS d'entreprise futur — tu cliques "Créer", 5 min après
+  tout est setup.
+- **API Hetzner Cloud** : utilisable depuis Coolify (option "Hetzner Cloud" à
+  l'install) pour piloter une flotte de VPS si on scale.
 
 ### À faire
-- [ ] Cron de dump Postgres quotidien (à définir l'emplacement)
-- [ ] Rsync des dumps vers un Object Storage externe (Scaleway / S3)
+- [ ] Cron `pg_dump` quotidien dans `/var/backups/bilan-pg-*.sql.gz`
+- [ ] Rsync des dumps vers un Object Storage externe (Scaleway Object Storage
+      ou Cloudflare R2 — pas Hetzner Storage Box pour découpler des backups)
+- [ ] Activer optionnellement les Backups Hetzner sur le VPS (filet additionnel)
 - [ ] Tester une restauration sur un VPS clone
-- [ ] Documenter la procédure de migration vers nouveau VPS (déjà ébauchée dans `deploy/README-DEPLOY.md` §7)
+- [ ] Écrire un script cloud-init pour la migration future (cf. `deploy/README-DEPLOY.md` §7)
+- [ ] Procédure cloud-init : `apt install`, swap, Coolify install, restore dump, DNS
 
 ---
 
