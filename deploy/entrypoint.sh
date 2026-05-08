@@ -21,10 +21,13 @@ fi
 
 if [ "${RUN_SEED:-false}" = "true" ]; then
   echo "[entrypoint] Running seed..."
-  # Run seed in subshell so its `cd` doesn't leak to the rest of the script.
-  # Use `|| true` so a failed seed doesn't prevent the server from starting —
-  # the seed can be re-run manually via the Coolify terminal afterwards.
-  ( cd /app/apps/bilan-carbone && tsx prisma/seed/index.ts ) || \
+  # The seed file at apps/bilan-carbone/prisma/seed/index.ts has this guard:
+  #   if (process.env.NODE_ENV === 'development' || NODE_ENV === 'test')
+  #     main(...)
+  # In production (NODE_ENV=production), the file loads but main() is never
+  # called — silent no-op. We force NODE_ENV=development just for this
+  # invocation so main() actually runs and inserts the seed data.
+  ( cd /app/apps/bilan-carbone && NODE_ENV=development tsx prisma/seed/index.ts ) || \
     echo "[entrypoint] Seed FAILED — continuing to start server. Re-run seed manually if needed."
   echo "[entrypoint] Seed step done."
 fi
