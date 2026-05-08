@@ -128,6 +128,10 @@ COPY --from=builder /app/apps/bilan-carbone/tsconfig.json     ./apps/bilan-carbo
 COPY --from=builder /app/tsconfig.base.json                   ./tsconfig.base.json
 # Source files referenced by the seed via @/* alias (constants, types, helpers)
 COPY --from=builder /app/apps/bilan-carbone/src               ./apps/bilan-carbone/src
+# Publicodes packages — referenced at runtime by src/constants/versions.ts
+# which does `require('../../publicodes-packages/publicodes-clickson/package.json')`
+# to log the version of each compiled rules engine.
+COPY --from=builder /app/apps/bilan-carbone/publicodes-packages ./apps/bilan-carbone/publicodes-packages
 
 # Entrypoint script (migrations + optional seed + start server)
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
