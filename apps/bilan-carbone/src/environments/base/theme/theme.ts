@@ -6,15 +6,18 @@ const base = createTheme({
   cssVariables: true,
   palette: {
     background: {
-      default: '#3880ff0d',
+      // SolutionsPlus rebrand (2026-05-21): était '#3880ff0d' (bleu ABC)
+      default: '#c8202d0d',
       paper: '#ffffff',
     },
     primary: {
-      main: '#272768',
-      light: '#ebf2ff',
+      // SolutionsPlus rebrand: était '#272768' (navy ABC) / '#ebf2ff'
+      main: '#c8202d',
+      light: '#fdf4f4',
     },
     secondary: {
-      main: '#346fef',
+      // SolutionsPlus rebrand: était '#346fef' (bleu ABC). Orange logo = accent secondaire.
+      main: '#f08c2a',
     },
     grey: {
       50: '#e9eff9',
@@ -44,7 +47,7 @@ const base = createTheme({
       main: '#F6AD34',
       light: '#FFF8EB',
     },
-    divider: '#1b5bf51a',
+    divider: '#c8202d1a', // SolutionsPlus rebrand: était '#1b5bf51a' (bleu ABC)
     beges1: {
       main: '#f15f57',
       light: '#FEF6F3',
@@ -136,7 +139,8 @@ const theme = createTheme(base, {
         },
         containedSecondary: {
           '&:hover': {
-            backgroundColor: '#002D7A',
+            // SolutionsPlus rebrand: était '#002D7A' (bleu foncé ABC)
+            backgroundColor: '#9e1924',
           },
         },
       },
@@ -235,7 +239,8 @@ const theme = createTheme(base, {
     },
     navbar: {
       organizationToolbar: {
-        border: '0.125rem solid rgba(27, 91, 245, 0.1)',
+        // SolutionsPlus rebrand: était rgba(27, 91, 245, 0.1) (bleu ABC)
+        border: '0.125rem solid rgba(200, 32, 45, 0.1)',
       },
       text: {
         fontFamily: 'gilroy-regular, sans-serif',
@@ -379,7 +384,8 @@ const theme = createTheme(base, {
       [SubPost.ParcInformatiqueDesBenevoles]: '#FF0000',
     },
     // Variants of secondary color
-    tagFamilyColors: ['#85a9f5', '#9ab7f7', '#aec5f9', '#c2d4fa', '#d6e2fc'],
+    // SolutionsPlus rebrand: étaient des variantes de bleu ABC (#85a9f5...). Remplacées par variantes rouge/orange.
+    tagFamilyColors: ['#e0565d', '#e87070', '#f08c2a', '#f5a84f', '#f9c376'],
   },
 })
 
