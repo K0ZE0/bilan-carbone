@@ -37,8 +37,9 @@ const PublicPage = ({ question, children }: Props) => {
         <p className="title-h4 mb1">{t('welcome')}</p>
         <p>{customRich(t, 'explanation')}</p>
         <Image
-          // SolutionsPlus rebrand (2026-05-21). Anciennement /logos/monogramme_BC_noir.png — fichier conservé pour rollback.
-          src="/logos/logo_solutionsplus.png"
+          // SolutionsPlus rebrand (2026-05-21). Version blanche pour fond rouge du panel gauche.
+          // Anciennement /logos/monogramme_BC_noir.png — fichier conservé pour rollback.
+          src="/logos/logo_solutionsplus_blanc.png"
           alt="Logo SolutionsPlus"
           width={400}
           height={400}
