@@ -1,15 +1,18 @@
 :root {
-  --primary-50: #ebf2ff;
-  --primary-100: #d6e5ff;
-  --primary-200: #adcbff;
-  --primary-300: #8ab5ff;
-  --primary-400: #619bff;
-  --primary-500: #346fef;
-  --primary-600: #005cfa;
-  --primary-700: #0045bd;
-  --primary-800: #002d7a;
-  --primary-900: #00163d;
-  --primary-950: #050019;
+  /* SolutionsPlus rebrand (2026-05-21).
+     Palette dérivée du rouge logo #C8202D (cf. memory/solutionsplus_brand.md).
+     Anciennement bleu ABC #346fef centre. Ratio préservé pour rollback simple. */
+  --primary-50: #fdf4f4;
+  --primary-100: #fbe7e8;
+  --primary-200: #f5c2c5;
+  --primary-300: #ed9095;
+  --primary-400: #e0565d;
+  --primary-500: #c8202d;
+  --primary-600: #b11b27;
+  --primary-700: #9e1924;
+  --primary-800: #7a131b;
+  --primary-900: #4d0c11;
+  --primary-950: #2a0608;
 
   --neutral-50: #e9eff9;
   --neutral-100: #dbe5f6;
@@ -46,14 +49,14 @@
   --grayscale-900: #4c5363;
   --grayscale-950: #2c303a;
 
-  --background-50: rgba(56, 128, 255, 0.05);
+  --background-50: rgba(200, 32, 45, 0.05); /* SolutionsPlus rebrand: était rgba(56, 128, 255, 0.05) (bleu ABC) */
   --background-100: var(--grayscale-200);
   --background-150: var(--neutral-50);
   --background-200: var(--neutral-200);
   --background-250: #fed7aa;
   --background-300: var(--info);
 
-  --border: 2px solid rgba(27, 91, 245, 0.1);
+  --border: 2px solid rgba(200, 32, 45, 0.1); /* SolutionsPlus rebrand: était rgba(27, 91, 245, 0.1) (bleu ABC) */
   --border-dark: 2px solid var(--primary-800);
 
   --post-darkBlue-dark: #0c2155;

@@ -1,11 +1,12 @@
 # Customisations bilan-carbone — Reminder & Tracker
 
 Ce doc liste TOUT ce qu'on devra modifier pour transformer le clone ABC en
-notre propre instance Kozeo. À mettre à jour au fur et à mesure.
+notre propre instance SolutionsPlus (démo destinée aux experts métiers de La Coopération Agricole).
+À mettre à jour au fur et à mesure.
 
-> **Status global** : déploiement Coolify fonctionnel sur http://abc.santiago.contact (HTTP).
+> **Status global** : déploiement Coolify fonctionnel sur https://abc.santiago.contact (HTTPS OK, cert Let's Encrypt).
 > Login possible avec comptes seed (`bc-admin-0@yopmail.com` / `password`).
-> HTTPS, SMTP, design, accounts custom : à faire.
+> SMTP, design, accounts custom : à faire.
 
 ---
 
@@ -23,7 +24,7 @@ notre propre instance Kozeo. À mettre à jour au fur et à mesure.
 
 ### À faire
 - [ ] Décider du modèle final : 1 admin propre OU plusieurs comptes test renommés
-- [ ] Choisir un email principal (ex: `kozeo@santiago.contact` ou autre)
+- [ ] Choisir un email principal (ex: `admin@santiago.contact` ou un email SolutionsPlus)
 - [ ] Choisir un mot de passe fort
 - [ ] Exécuter le SQL de renommage / création (commande à générer via `signPassword` de l'app)
 - [ ] Documenter le compte de récupération dans un password manager
@@ -33,7 +34,7 @@ notre propre instance Kozeo. À mettre à jour au fur et à mesure.
 ```sql
 -- Dans le terminal Coolify (sur le service Postgres)
 UPDATE bilan_carbone.users 
-SET email = 'kozeo@santiago.contact', 
+SET email = 'admin@santiago.contact', 
     password = '<hash bcrypt>'
 WHERE email = 'bc-admin-0@yopmail.com';
 ```
@@ -51,7 +52,7 @@ node -e "require('./src/services/auth').signPassword('TON_PASSWORD').then(h => c
 
 ---
 
-## 2. Branding ABC → Kozeo
+## 2. Branding ABC → SolutionsPlus
 
 Tout au long de l'app, il y a des références ABC (texts, liens, logos). À nettoyer.
 
@@ -95,56 +96,42 @@ grep -r "ABC\|Association.*Bilan.*Carbone\|bilan-carbone\|abc-transitionbascarbo
 
 ---
 
-## 3. Design (couleurs, logo, fonts)
+## 3. Design (couleurs, logo, fonts) ✅ PARTIEL (2026-05-21)
 
-**Bonne nouvelle** : c'est super propre chez ABC, tout est centralisé.
+### Réalisé : palette + logo pour l'environnement BC
 
-### Logo
-2 fichiers PNG à remplacer :
+**Note sur la cartographie réelle des logos** (le doc initial pointait sur `public/logos/abc/logo_abc.png`,
+qui est en fait le logo de l'environnement **TILT**, pas BC). Les vrais fichiers BC sont à la racine de `public/logos/`.
+
+**Logo SolutionsPlus** (source : `logo_solutionsplus.png` 1831×1440, ratio ~1.27, fond transparent) :
+
+| Emplacement | Avant | Après | Dim DOM | Code modifié |
+|---|---|---|---|---|
+| Header dashboard | `/logos/logo_bc_blanc_nospace.png` | `/logos/logo_solutionsplus.png` | 45×35 (au lieu de 100×35) | `src/components/base/Logo.tsx` DEFAULT |
+| Login monogramme | `/logos/monogramme_BC_noir.png` | `/logos/logo_solutionsplus.png` | 400×400 (inchangé) | `src/components/pages/Public.tsx` |
+| Login wordmark | `/logos/logo_BC_noir.png` | `/logos/logo_solutionsplus.png` | 173×136 (au lieu de 278×136) | `src/components/pages/Public.tsx` |
+
+Les anciens PNG **sont conservés** dans `public/logos/` (`logo_bc_blanc_nospace.png`, `monogramme_BC_noir.png`,
+`logo_BC_noir.png`) pour rollback facile — il suffit de revert les commits sur les .tsx.
+
+**Palette `colors.css`** (`src/css/themes/base/colors.css`) — variables `--primary-*` rebasculées du bleu ABC `#346fef` vers le rouge SolutionsPlus `#C8202D`. Détail des 11 nuances et 2 vars dérivées (`--background-50`, `--border`) dans le commit. Cf. `memory/solutionsplus_brand.md`.
+
+### Pas (encore) fait dans cette session
+- [ ] Theme CUT (`src/css/themes/cut/colors.css`) — pas touché car CUT = environnement Cap Carbone non-prioritaire pour la démo
+- [ ] MUI overrides dans `src/environments/*/theme/theme.ts` — non touché (utilise déjà les CSS vars en grande partie)
+- [ ] Logo des environnements **TILT, CLICKSON, CUT** — conservés ABC car ils servent la démo
+- [ ] Fonts custom (`src/app/layout.tsx`) — pas changées (Inter/standard Next.js, OK pour démo)
+- [ ] Textes i18n (mentions "ABC", "Association Bilan Carbone" dans `src/i18n/translations/`) — **volontairement conservés** (décision validée 2026-05-21) : la démo doit montrer l'app ABC officielle aux experts métiers, donc on garde la marque "Bilan Carbone®" et les mentions ABC dans CGU/PDF méthodologie/textes légaux
+- [ ] PDFs méthodologie dans `public/` (`methodologie_count.pdf`, etc.) — conservés ABC pour la même raison
+
+### Rollback rapide
+```bash
+git revert <commit-rebrand-solutionsplus>
+# Ou manuellement :
+# - Logo.tsx : src '/logos/logo_bc_blanc_nospace.png', width 100, height 35
+# - Public.tsx : srcs originales /logos/monogramme_BC_noir.png et /logos/logo_BC_noir.png + dims 278x136
+# - colors.css : voir git diff
 ```
-apps/bilan-carbone/public/logos/abc/logo_abc.png         ← logo principal (header)
-apps/bilan-carbone/public/logos/abc/logo_abc_base.png    ← logo base (footer ?)
-```
-**Conserve les mêmes dimensions** (à vérifier visuellement). Si tu veux un SVG c'est encore mieux mais il faut chercher où chaque PNG est référencé.
-
-Drapeaux i18n : pas à changer (`public/logos/FR.svg`, `GB.svg`, etc.) — utilisés pour les langues.
-
-### Couleurs
-Toutes les couleurs sont des CSS variables dans :
-```
-apps/bilan-carbone/src/css/themes/base/colors.css
-apps/bilan-carbone/src/css/themes/cut/colors.css   ← env Cap Carbone (différent)
-```
-
-Variables principales à modifier (palette `--primary-*` de 50 à 950) :
-```css
-:root {
-  --primary-50: #ebf2ff;    /* lightest */
-  --primary-500: #346fef;   /* MAIN brand color */
-  --primary-700: #0045bd;   /* darker */
-  --primary-900: #00163d;   /* darkest */
-  ...
-}
-```
-
-→ **C'est tout**. Tu changes les hex, ça change partout via CSS vars.
-
-Outils utiles pour générer une palette cohérente :
-- https://uicolors.app/create
-- https://palettte.app/
-
-### Fonts
-Le repo utilise `next/font` (auto-import). Les fonts sont déclarées dans `apps/bilan-carbone/src/app/layout.tsx` ou similaire. À chercher si on veut changer.
-
-### MUI Theme
-MUI overrides dans `apps/bilan-carbone/src/environments/*/theme/theme.ts` (TILT a son propre thème par exemple).
-
-### À faire
-- [ ] Définir la palette Kozeo (au moins `--primary-500` et 2-3 nuances)
-- [ ] Préparer les 2 PNG du logo (versions principale + footer)
-- [ ] Remplacer les PNG dans `public/logos/abc/`
-- [ ] Modifier `colors.css` (base + cut si on garde l'env CUT)
-- [ ] Optionnel : changer la font dans `layout.tsx`
 
 ---
 
@@ -177,23 +164,39 @@ MUI overrides dans `apps/bilan-carbone/src/environments/*/theme/theme.ts` (TILT 
 
 ---
 
-## 5. HTTPS + cert Let's Encrypt
+## 5. HTTPS + cert Let's Encrypt ✅ DONE (2026-05-11)
 
-### État actuel
-- App accessible en HTTP : `http://abc.santiago.contact`
-- Caddy configuré dans Coolify mais cert non généré
-- Browser affiche "no available server" si on tente HTTPS directement
+### Réalisé
+- App en HTTPS : `https://abc.santiago.contact` (redirect 80→443 actif)
+- Cert Let's Encrypt valide (issuer `R13`, expire 2026-08-09)
+- Le proxy de Coolify est **Traefik v3.6**, pas Caddy (le doc original disait Caddy par erreur)
 
-### Causes possibles
-- Caddy attend un trafic HTTPS pour amorcer ACME challenge
-- Ou problème de config réseau Caddy / domaine
+### Procédure utilisée
+1. Coolify → app `bilan-carbone` → champ Domains : `http://abc.santiago.contact` → `https://abc.santiago.contact`
+   - Save → Traefik provisionne automatiquement le cert via le resolver `letsencrypt` (labels Traefik générés par Coolify : `traefik.http.routers.https-*.tls.certresolver=letsencrypt`)
+   - Le redirect HTTP→HTTPS est aussi auto-généré (middleware `redirect-to-https`)
+2. Coolify → app → Environment Variables : changer en `https://` :
+   - `NEXTAUTH_URL`
+   - `NEXT_API_URL` (oublié au premier passage → mixed content silencieux qui faisait Chrome flagger "Non sécurisé" en mode normal)
+3. Redeploy de l'app
 
-### À faire
-- [ ] Vérifier les logs Caddy : `docker logs coolify-proxy | grep -iE 'acme|santiago|cert'`
-- [ ] Force HTTPS dans Coolify settings de l'app (`is_force_https_enabled`)
-- [ ] Tester `curl -kIv https://abc.santiago.contact/`
-- [ ] Si échec persistant : configurer Caddy explicitement avec ACME
-- [ ] Vérifier `NEXTAUTH_URL` est bien `https://...` après mise en place
+### Pièges rencontrés
+- **Pendant le redeploy**, Traefik a brièvement loggé `Router defined multiple times with different configurations` — état transitoire (containers ancien + nouveau coexistent quelques secondes). Auto-résolu.
+- **Coolify UI inaccessible un moment** : c'était un cache navigateur côté local (mauvais port tapé : 8801 au lieu de 8001). Le service tournait toujours.
+- **Badge Chrome "Non sécurisé"** : persiste en mode normal à cause de l'historique du navigateur + extensions qui injectent du contenu non-CSP. En navigation privée, cadenas OK. Pas un vrai problème.
+
+### Commandes de diag utiles (pour mémoire)
+```bash
+# Voir le cert servi
+echo | openssl s_client -connect abc.santiago.contact:443 -servername abc.santiago.contact 2>/dev/null \
+  | openssl x509 -noout -issuer -subject -dates
+
+# Voir les labels Traefik sur l'app
+docker inspect <container_app> --format '{{json .Config.Labels}}' | tr ',' '\n' | grep traefik
+
+# Logs Traefik récents
+docker logs coolify-proxy --since 5m 2>&1 | tail -50
+```
 
 ---
 
@@ -203,7 +206,7 @@ MUI overrides dans `apps/bilan-carbone/src/environments/*/theme/theme.ts` (TILT 
 - `abc.santiago.contact` (sous-domaine OVH provisoire)
 
 ### À faire
-- [ ] Décider du domaine cible Kozeo (ex: `bilan.kozeo.fr`, `carbone.santiago.contact`, etc.)
+- [ ] Décider du domaine cible SolutionsPlus (ex: `bilan.solutionsplus.fr`, sous-domaine `lacooperationagricole.coop`, etc.)
 - [ ] Ajouter l'enregistrement DNS chez OVH
 - [ ] Ajouter le domaine dans Coolify (peut avoir plusieurs domaines)
 - [ ] Mettre à jour `NEXTAUTH_URL`, `NEXT_API_URL`, `CONTACT_EMAIL` etc.
@@ -336,4 +339,6 @@ MUI overrides dans `apps/bilan-carbone/src/environments/*/theme/theme.ts` (TILT 
 |---|---|---|
 | 2026-05-07 | Fork ABC → K0ZE0/bilan-carbone | Base : `3569e1fb` |
 | 2026-05-07 | Premier deploy Coolify réussi | http://abc.santiago.contact |
+| 2026-05-11 | HTTPS activé (cert Let's Encrypt) | §5 cochée ; `NEXTAUTH_URL` + `NEXT_API_URL` passés en `https://` |
+| 2026-05-21 | Rebrand visuel SolutionsPlus (logo + palette `--primary-*` rouge) sur env BC uniquement | §3 partiel ; anciens PNG conservés ; textes i18n et PDFs ABC volontairement gardés (démo des experts) |
 | _yyyy-mm-dd_ | _action_ | _note_ |

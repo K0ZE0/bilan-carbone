@@ -17,9 +17,11 @@ const logosPerEnvironment: Record<string, LogoConfig[]> = {
   [Environment.CLICKSON]: [{ src: '/logos/clickson/logo_clickson.png', alt: 'Logo Clickson', width: 65, height: 35 }],
   DEFAULT: [
     {
-      src: '/logos/logo_bc_blanc_nospace.png',
-      alt: 'Logo de bilan carbone',
-      width: 100,
+      // SolutionsPlus rebrand (2026-05-21). Logo source quasi carré (1831x1440, ratio ~1.27).
+      // Anciennement /logos/logo_bc_blanc_nospace.png (1028x368, ratio ~2.79) — fichier conservé pour rollback.
+      src: '/logos/logo_solutionsplus.png',
+      alt: 'Logo SolutionsPlus',
+      width: 45,
       height: 35,
     },
   ],

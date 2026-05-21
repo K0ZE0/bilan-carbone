@@ -37,8 +37,9 @@ const PublicPage = ({ question, children }: Props) => {
         <p className="title-h4 mb1">{t('welcome')}</p>
         <p>{customRich(t, 'explanation')}</p>
         <Image
-          src="/logos/monogramme_BC_noir.png"
-          alt="logo"
+          // SolutionsPlus rebrand (2026-05-21). Anciennement /logos/monogramme_BC_noir.png — fichier conservé pour rollback.
+          src="/logos/logo_solutionsplus.png"
+          alt="Logo SolutionsPlus"
           width={400}
           height={400}
           className={classNames(styles.image, 'w100')}
@@ -67,9 +68,11 @@ const PublicPage = ({ question, children }: Props) => {
           </div>
           <Image
             className={classNames(styles.welcomeLogo, 'align-end')}
-            src="/logos/logo_BC_noir.png"
-            alt="logo"
-            width={278}
+            // SolutionsPlus rebrand (2026-05-21). Anciennement /logos/logo_BC_noir.png (278x136, ratio ~2.05) — fichier conservé pour rollback.
+            // Dimensions ajustées au ratio carré du logo SolutionsPlus (1.27).
+            src="/logos/logo_solutionsplus.png"
+            alt="Logo SolutionsPlus"
+            width={173}
             height={136}
           />
         </div>
